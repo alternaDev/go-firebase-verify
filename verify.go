@@ -68,6 +68,7 @@ func fetchPublicKeys() (map[string]*json.RawMessage, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	var objmap map[string]*json.RawMessage
 	decoder := json.NewDecoder(resp.Body)
