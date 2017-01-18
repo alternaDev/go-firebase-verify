@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
+	"gopkg.in/dgrijalva/jwt-go.v3"
 )
 
 const (
@@ -47,11 +47,13 @@ func VerifyIDToken(idToken string, googleProjectID string) (string, error) {
 
 	errMessage := ""
 
-	if parsedToken.Claims["aud"].(string) != googleProjectID {
-		errMessage = "Firebase Auth ID token has incorrect 'aud' claim: " + parsedToken.Claims["aud"].(string)
-	} else if parsedToken.Claims["iss"].(string) != "https://securetoken.google.com/"+googleProjectID {
+	claims := parsedToken.Claims.(jwt.MapClaims)
+
+	if claims["aud"].(string) != googleProjectID {
+		errMessage = "Firebase Auth ID token has incorrect 'aud' claim: " + claims["aud"].(string)
+	} else if claims["iss"].(string) != "https://securetoken.google.com/"+googleProjectID {
 		errMessage = "Firebase Auth ID token has incorrect 'iss' claim"
-	} else if parsedToken.Claims["sub"].(string) == "" || len(parsedToken.Claims["sub"].(string)) > 128 {
+	} else if claims["sub"].(string) == "" || len(claims["sub"].(string)) > 128 {
 		errMessage = "Firebase Auth ID token has invalid 'sub' claim"
 	}
 
@@ -59,7 +61,7 @@ func VerifyIDToken(idToken string, googleProjectID string) (string, error) {
 		return "", errors.New(errMessage)
 	}
 
-	return string(parsedToken.Claims["sub"].(string)), nil
+	return string(claims["sub"].(string)), nil
 }
 
 func fetchPublicKeys() (map[string]*json.RawMessage, error) {
